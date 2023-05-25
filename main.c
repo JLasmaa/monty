@@ -1,45 +1,46 @@
 #include "monty.h"
-bus_t bus = {NULL, NULL, NULL, 0};
-/**
-* main - monty code interpreter
-* @argc: number of arguments
-* @argv: monty file location
-* Return: 0 on success
-*/
-int main(int argc, char *argv[])
-{
-	char *content;
-	FILE *file;
-	size_t size = 0;
-	ssize_t read_line = 1;
-	stack_t *stack = NULL;
-	unsigned int counter = 0;
 
-	if (argc != 2)
+
+utils_t utls;
+
+/**
+ * main - entry point
+ * @ac: argument count
+ * @av: argument vector
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+*/
+
+int main(int ac, char **av)
+{
+	char line[BUFFSIZE];
+	stack_t *stack = NULL;
+
+	utls.line_n = 0;
+	utls.args = NULL;
+	utls.queue = 0;
+	if (ac == 2)
 	{
-		fprintf(stderr, "USAGE: monty file\n");
-		exit(EXIT_FAILURE);
-	}
-	file = fopen(argv[1], "r");
-	bus.file = file;
-	if (!file)
-	{
-		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
-		exit(EXIT_FAILURE);
-	}
-	while (read_line > 0)
-	{
-		content = NULL;
-		read_line = getline(&content, &size, file);
-		bus.content = content;
-		counter++;
-		if (read_line > 0)
+		utls.file_ptr = fopen(av[1], "r");
+		if (utls.file_ptr == NULL)
 		{
-			execute(content, &stack, counter, file);
+			fprintf(stderr, "Error: Can't open file %s\n", av[1]);
+			exit(EXIT_FAILURE);
 		}
-		free(content);
+		utls.args = malloc(sizeof(char *) * 2);
+		while (1)
+		{
+			if (fgets(line, BUFFSIZE, utls.file_ptr) == NULL)
+			{
+				fclose(utls.file_ptr);
+				free(utls.args);
+				free_stack(&stack);
+				break;
+			}
+			utls.line_n++;
+			parse_line(line, &stack);
+		}
+		return (EXIT_SUCCESS);
 	}
-	free_stack(stack);
-	fclose(file);
-return (0);
+	fprintf(stderr, "USAGE: monty file\n");
+	return (EXIT_FAILURE);
 }

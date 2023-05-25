@@ -1,45 +1,47 @@
 #include "monty.h"
 
 /**
- * f_push - add node to the stack
- * @head: pointer to the head of the stack
- * @counter: line number
- *
- * Return: no return value
+ * isNumber - checks if a string is a number
+ * @str: string to check
+ * Return: 1 if true, 0 if false
  */
-void f_push(stack_t **head, unsigned int counter)
-{
- int n, j = 0, flag = 0;
 
- if (bus.arg)
- {
-  if (bus.arg[0] == '-')
-   j++;
-  for (; bus.arg[j] != '\0'; j++)
-  {
-   if (bus.arg[j] > 57 || bus.arg[j] < 48)
-    flag = 1;
-  }
-  if (flag == 1)
-  {
-   fprintf(stderr, "L%d: usage: push integer\n", counter);
-   fclose(bus.file);
-   free(bus.content);
-   free_stack(*head);
-   exit(EXIT_FAILURE);
-  }
- }
- else
- {
-  fprintf(stderr, "L%d: usage: push integer\n", counter);
-  fclose(bus.file);
-  free(bus.content);
-  free_stack(*head);
-  exit(EXIT_FAILURE);
- }
- n = atoi(bus.arg);
- if (bus.lifi == 0)
-  addnode(head, n);
- else
-  addqueue(head, n);
+int isNumber(const char *str)
+{
+	if (!str || *str == '\0')
+		return (0);
+	if (*str == '-')
+		str++;
+	while (*str)
+	{
+		if (!isdigit(*str))
+			return (0);
+		str++;
+	}
+	return (1);
+}
+
+/**
+ * _push - pushes an element to the stack
+ * @stack: pointer to the stack
+ * @line_number: line number
+ */
+
+void _push(stack_t **stack, unsigned int line_number)
+{
+	int n;
+
+	if (!utls.args[1] || !isNumber(utls.args[1]))
+	{
+		fprintf(stderr, "L%d: usage: push integer\n", line_number);
+		fclose(utls.file_ptr);
+		free(utls.args);
+		free_stack(stack);
+		exit(EXIT_FAILURE);
+	}
+	n = atoi(utls.args[1]);
+	if (utls.queue)
+		add_node_end(stack, n);
+	else
+		add_node(stack, n);
 }
